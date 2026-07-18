@@ -20,7 +20,9 @@ function formatReporte(row, req) {
     fotoUrl,
     estado: row.estado,
     userId: row.user_id ?? null,
+    resueltoPor: row.resuelto_por ?? null,
     createdAt: row.created_at,
+    updatedAt: row.updated_at ?? null,
   };
 }
 
@@ -89,7 +91,7 @@ export async function updateEstadoReporte(req, res, next) {
       throw err;
     }
 
-    const row = await reporteService.updateEstadoReporte(id, estado);
+    const row = await reporteService.updateEstadoReporte(id, estado, req.user?.id);
     return success(res, formatReporte(row, req));
   } catch (err) {
     next(err);

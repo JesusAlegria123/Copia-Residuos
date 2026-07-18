@@ -35,6 +35,17 @@ export function errorHandler(err, req, res, _next) {
     return error(res, 'NOT_FOUND', err.message, 404);
   }
 
+  if (err.code === 'FORBIDDEN') {
+    return error(res, 'FORBIDDEN', err.message, 403);
+  }
+
+  // Fallback genérico: cualquier error de negocio ya trae su propio
+  // statusCode/code (ej. INVALID_ESTADO, CONFLICT, BAD_REQUEST) y no
+  // necesita whitelist explícita para no caer sistemáticamente en 500.
+  if (err.statusCode && err.statusCode < 500) {
+    return error(res, err.code || 'BAD_REQUEST', err.message, err.statusCode);
+  }
+
   return error(
     res,
     'SERVER_ERROR',

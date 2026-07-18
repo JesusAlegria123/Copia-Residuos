@@ -7,6 +7,9 @@ import { config } from './config/env.js';
 import authRoutes from './routes/auth.routes.js';
 import dataRoutes from './routes/data.routes.js';
 import reporteRoutes from './routes/reporte.routes.js';
+import unidadRoutes from './routes/unidad.routes.js';
+import estadisticasRoutes from './routes/estadisticas.routes.js';
+import recoleccionRoutes from './routes/recoleccion.routes.js';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
 import { generalLimiter } from './middleware/rateLimiter.js';
 
@@ -45,6 +48,9 @@ app.get('/health', (_req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/reportes', reporteRoutes);
+app.use('/api/unidades', unidadRoutes);
+app.use('/api/estadisticas', estadisticasRoutes);
+app.use('/api/recolecciones', recoleccionRoutes);
 app.use('/api', dataRoutes);
 
 app.use(notFoundHandler);

@@ -57,7 +57,7 @@ export async function getReporteById(id) {
   return data;
 }
 
-export async function updateEstadoReporte(id, estado) {
+export async function updateEstadoReporte(id, estado, adminId) {
   const ESTADOS_VALIDOS = ['Pendiente', 'En Proceso', 'Resuelto', 'Rechazado'];
   if (!ESTADOS_VALIDOS.includes(estado)) {
     const err = new Error(`Estado inválido. Usa: ${ESTADOS_VALIDOS.join(', ')}`);
@@ -66,10 +66,34 @@ export async function updateEstadoReporte(id, estado) {
     throw err;
   }
 
+  const actual = await getReporteById(id);
+  if (!actual) {
+    const err = new Error('El reporte no fue encontrado.');
+    err.statusCode = 404;
+    err.code = 'NOT_FOUND';
+    throw err;
+  }
+
+  // Transición inválida: un reporte ya Resuelto/Rechazado no vuelve a Pendiente
+  // salvo que un admin explícitamente lo reabra pasándolo a "En Proceso".
+  const ESTADOS_FINALES = ['Resuelto', 'Rechazado'];
+  if (ESTADOS_FINALES.includes(actual.estado) && estado === 'Pendiente') {
+    const err = new Error(
+      `El reporte ya está en estado "${actual.estado}" y no puede volver a "Pendiente". Usa "En Proceso" para reabrirlo.`
+    );
+    err.statusCode = 409;
+    err.code = 'INVALID_TRANSITION';
+    throw err;
+  }
+
+  const payload = { estado };
+  // Solo registramos quién resolvió/rechazó; si vuelve a estar activo, se limpia.
+  payload.resuelto_por = ESTADOS_FINALES.includes(estado) ? adminId ?? null : null;
+
   const supabase = getSupabase();
   const { data, error } = await supabase
     .from('reportes_malos_trabajos')
-    .update({ estado })
+    .update(payload)
     .eq('id_reporte', id)
     .select('*')
     .maybeSingle();

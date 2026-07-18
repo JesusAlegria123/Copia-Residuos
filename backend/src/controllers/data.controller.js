@@ -43,6 +43,15 @@ export async function enableUsuario(req, res, next) {
   }
 }
 
+export async function updateUsuario(req, res, next) {
+  try {
+    const row = await dataService.updateUsuario(req.params.id, req.body ?? {});
+    return success(res, formatLegacyUsuario(row));
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function getRoles(req, res, next) {
   try {
     const rows = await dataService.listRoles();
@@ -130,6 +139,15 @@ export async function getAuthUsers(req, res, next) {
   try {
     const rows = await dataService.listAuthUsers();
     return success(res, { users: rows.map(formatUser) });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function updateAuthUser(req, res, next) {
+  try {
+    const row = await dataService.updateAuthUser(req.params.id, req.body ?? {});
+    return success(res, formatUser(row));
   } catch (err) {
     next(err);
   }
